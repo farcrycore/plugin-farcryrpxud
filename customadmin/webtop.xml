@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<webtop>
+	<section id="admin" mergeType="merge">
+		<subsection id="general">
+			<menu id="rpxud" sequence="150" label="RPX OpenID Directory" permission="SecurityPolicyManagementTab">
+				<menuitem id="listrpxprofiles" sequence="10" label="Users" link="/admin/customadmin.cfm?module=customlists/rpxProfile.cfm&amp;plugin=farcryrpx" />
+				<menuitem id="listrpxgroup" sequence="20" label="Groups" link="/admin/customadmin.cfm?module=customlists/rpxGroup.cfm&amp;plugin=farcryrpx" />
+			</menu>
+		</subsection>
+	</section>
+</webtop>
