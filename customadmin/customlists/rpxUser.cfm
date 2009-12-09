@@ -31,22 +31,23 @@ $Developer: Blair McKenzie (blair@daemon.com.au) $
 <!--- set up page header --->
 <admin:header title="User Admin" />
 
-
-<!--- ONLY ALLOW DELETE BUTTON FOR PERMISSION NAME dmProfileDelete --->
-<cfif application.fapi.checkTypePermission(typename="dmProfile", permission="dmProfileDelete")>
-	<cfset lButtons = "Delete,Properties,Unlock" />
-<cfelse>
-	<cfset lButtons = "Properties,Unlock" />
-</cfif>
+<ft:processForm action="add">
+	<skin:onReady>
+		<cfoutput>
+			$fc.objectAdminAction('Administration', '#application.url.farcry#/conjuror/invocation.cfm?objectid=#application.fc.utils.createJavaUUID()#&typename=rpxUser&method=edit&ref=iframe&module=#url.module#&plugin=#url.plugin#');
+		</cfoutput>
+	</skin:onReady>
+	<cfset structdelete(form,"farcryformsubmitted") />
+</ft:processForm>
 
 <ft:objectadmin
 	typename="dmProfile"
 	title="RPX User Administration"
-	columnList="openid,firstname,lastname" 
+	columnList="firstname,lastname" 
+	lCustomColumns="OpenID:displayCellOpenID"
 	sortableColumns="firstname,lastname"
 	lFilterFields="firstname,lastname"
 	sqlorderby="lastname asc" 
-	lButtons="#lButtons#"
 	sqlwhere="userdirectory='RPX'"
 	module="customlists/rpxProfile.cfm"
 	plugin="farcryrpxud"

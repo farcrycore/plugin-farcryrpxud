@@ -7,8 +7,7 @@
 <cfimport taglib="/farcry/core/tags/admin/" prefix="admin" />
 <cfimport taglib="/farcry/core/tags/webskin/" prefix="skin" />
 
-<cfset oUser = application.fapi.createContentType(typename="rpxUser") />
-
+<cfset oUser = application.fapi.getContentType(typename="rpxUser") />
 
 <!----------------------------- 
 ACTION	
@@ -42,7 +41,7 @@ ACTION
 <cfif stObj.userdirectory eq "RPX" or stObj.userdirectory eq "">
 
 	<cfset userID = application.factory.oUtils.listSlice(stObj.username,1,-2,"_") />
-	<cfset stUser = oUser.getByUserID(userID) />
+	<cfset stUser = oUser.getData(userID) />
 	
 <cfelse>
 	
@@ -61,9 +60,9 @@ VIEW
 	<ft:object objectid="#stObj.objectid#" typename="dmProfile" lfields="firstname,lastname,breceiveemail,emailaddress,phone,fax,position,department,locale,overviewHome" lhiddenFields="username,userdirectory" legend="User details" />
 	
 	<cfset userID = application.factory.oUtils.listSlice(stObj.username,1,-2,"_") />
-	<cfset stUser = oUser.getByUserID(userID) />
+	<cfset stUser = oUser.getData(userID) />
 	
-	<cfif structIsEmpty(stUser) or stUser.userid eq "">
+	<cfif structIsEmpty(stUser) or stUser.openid eq "">
 		<cfset stPropValues = structnew() />
 		<cfset stPropValues.userdirectory = "RPX" />
 

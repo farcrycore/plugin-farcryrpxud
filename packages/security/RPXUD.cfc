@@ -137,11 +137,16 @@
 		<cfargument name="userid" type="string" required="true" hint="The user directory specific user id" />
 		<cfargument name="currentprofile" type="struct" required="false" hint="The current user profile" />
 		
+		<cfset var stProfile = structnew() />
+		
 		<cfif isdefined("session.openid")>
-			
+			<cfset stProfile.firstname = session.openid.rsp.profile.name.givenName.xmlText />
+			<cfset stProfile.lastname = session.openid.rsp.profile.name.familyName.xmlText />
+			<cfset stProfile.emailaddress = session.openid.rsp.profile.verifiedEmail.xmlText />
+			<cfset stProfile.override = true />
 		</cfif>
 		
-		<cfreturn structnew() />
+		<cfreturn stProfile />
 	</cffunction>
 	
 	<cffunction name="isEnabled" access="public" output="false" returntype="boolean" hint="Returns true if this user directory is active. This function can be overridden to check for the existence of config settings.">
