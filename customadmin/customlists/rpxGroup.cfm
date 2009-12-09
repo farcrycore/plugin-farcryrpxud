@@ -36,6 +36,8 @@ $Developer: Blair McKenzie (blair@daemon.com.au) $
 	columnList="title" 
 	sortableColumns="title"
 	lFilterFields="title"
-	sqlorderby="title asc" />
+	sqlorderby="title asc"
+	module="customlists/rpxGroup.cfm"
+	plugin="farcryrpxud" />
 
 <admin:footer />

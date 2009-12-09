@@ -60,20 +60,16 @@ VIEW
 <ft:form>
 	<ft:object objectid="#stObj.objectid#" typename="dmProfile" lfields="firstname,lastname,breceiveemail,emailaddress,phone,fax,position,department,locale,overviewHome" lhiddenFields="username,userdirectory" legend="User details" />
 	
-	<cfif stObj.userdirectory eq "RPX" or stObj.userdirectory eq "">
+	<cfset userID = application.factory.oUtils.listSlice(stObj.username,1,-2,"_") />
+	<cfset stUser = oUser.getByUserID(userID) />
+	
+	<cfif structIsEmpty(stUser) or stUser.userid eq "">
+		<cfset stPropValues = structnew() />
+		<cfset stPropValues.userdirectory = "RPX" />
 
-		<cfset userID = application.factory.oUtils.listSlice(stObj.username,1,-2,"_") />
-		<cfset stUser = oUser.getByUserID(userID) />
-		
-		<cfif structIsEmpty(stUser) or stUser.userid eq "">
-			<cfset stPropValues = structnew() />
-			<cfset stPropValues.userdirectory = "RPX" />
-
-			<ft:object stObject="#stObj#" typename="rpxUser" lfields="openid,aGroups" stPropValues="#stPropValues#" legend="Security" />
-		<cfelse>
-			<ft:object stObject="#stUser#" typename="rpxUser" lfields="aGroups" legend="Security" />
-		</cfif>
-		
+		<ft:object stObject="#stObj#" typename="rpxUser" lfields="openid,aGroups" stPropValues="#stPropValues#" legend="Security" />
+	<cfelse>
+		<ft:object stObject="#stUser#" typename="rpxUser" lfields="aGroups" legend="Security" />
 	</cfif>
 	
 	<ft:farcryButtonPanel>

@@ -49,7 +49,7 @@ $Developer: Blair McKenzie (blair@daemon.com.au) $
 	lButtons="#lButtons#"
 	sqlwhere="userdirectory='RPX'"
 	module="customlists/rpxProfile.cfm"
-	plugin="farcryrpx"
+	plugin="farcryrpxud"
  />
 
 <admin:footer />

@@ -35,12 +35,12 @@
 				<cfif qMatch.recordcount>
 				
 					<cfset stResult.authenticated = "true" />
-					<cfset stResult.userid = u.objectid />
+					<cfset stResult.userid = qMatch..objectid />
 					<cfset stResult.ud = "RPX" />
 					
 				<cfelse>
 				
-					<cfset stUser = oUser.getData(objectd=createuuid()) />
+					<cfset stUser = oUser.getData(objectid=createuuid()) />
 					<cfset stUser.openid = session.openid.rsp.profile.identifier.xmlText />
 					<cfif len(application.config.rpx.defaultgroup)>
 						<cfset arrayappend(stUser.aGroups,application.config.rpx.defaultgroup) />
@@ -84,7 +84,7 @@
 					inner join
 					#application.dbowner#rpxGroup g
 					on ug.data=g.objectid
-			where	objectid=<cfqueryparam cfsqltype="cf_sql_varchar" value="#arguments.userid#" />
+			where	u.objectid=<cfqueryparam cfsqltype="cf_sql_varchar" value="#arguments.userid#" />
 		</cfquery>
 		
 		<cfloop query="qGroups">
@@ -142,6 +142,11 @@
 		</cfif>
 		
 		<cfreturn structnew() />
+	</cffunction>
+	
+	<cffunction name="isEnabled" access="public" output="false" returntype="boolean" hint="Returns true if this user directory is active. This function can be overridden to check for the existence of config settings.">
+		
+		<cfreturn application.factory.oAltertype.isCFCDeployed(typename="rpxUser") and application.factory.oAltertype.isCFCDeployed(typename="rpxGroup") and isdefined("application.config.rpx.realm") and len(application.config.rpx.realm) and isdefined("application.config.rpx.apikey") and len(application.config.rpx.apikey) />
 	</cffunction>
 	
 </cfcomponent>
