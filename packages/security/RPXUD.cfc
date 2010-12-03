@@ -140,9 +140,25 @@
 		<cfset var stProfile = structnew() />
 		
 		<cfif isdefined("session.openid")>
-			<cfset stProfile.firstname = session.openid.rsp.profile.name.givenName.xmlText />
-			<cfset stProfile.lastname = session.openid.rsp.profile.name.familyName.xmlText />
-			<cfset stProfile.emailaddress = session.openid.rsp.profile.verifiedEmail.xmlText />
+						
+			<cfif XmlSearch(session.openid,"count(rsp/profile/name/givenName)")>
+				<cfset stProfile.firstname = session.openid.rsp.profile.name.givenName.xmlText />
+				<cfset stProfile.lastname = session.openid.rsp.profile.name.familyName.xmlText />
+			<cfelseif XmlSearch(session.openid,"count(rsp/profile/name/formatted)")>
+				<cfset formattedName = session.openid.rsp.profile.name.formatted.xmlText>
+				<cfset blankPos = find(" ",formattedName)>
+				<cfset stProfile.firstname = Left(formattedName,blankPos)>
+				<cfset stProfile.lastname = Right(formattedName,len(formattedName)-blankPos)>
+			<cfelseif XmlSearch(session.openid,"count(rsp/profile/displayName)")>
+				<cfset stProfile.firstname = session.openid.rsp.profile.displayName.xmlText />
+			</cfif>
+			<cfset stProfile.label = stProfile.firstname & " " & stProfile.lastname>
+			
+			<cfif XmlSearch(session.openid,"count(rsp/profile/verifiedEmail)")>
+				<cfset stProfile.emailaddress = session.openid.rsp.profile.verifiedEmail.xmlText />
+			<cfelseif XmlSearch(session.openid,"count(rsp/profile/email)")>
+				<cfset stProfile.emailaddress = session.openid.rsp.profile.email.xmlText />				
+			</cfif>
 			<cfset stProfile.override = true />
 		</cfif>
 		
