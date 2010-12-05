@@ -50,7 +50,7 @@ START WEBSKIN
 			
 			</ft:form>
 			
-			<cfif application.factory.oAltertype.isCFCDeployed(typename="rpxUser") and isdefined("application.config.rpx.realm")>
+			<cfif isdefined("application.config.rpx.realm")>
 				<cfoutput>
 					<iframe src="https://#application.config.rpx.realm#.rpxnow.com/openid/embed?token_url=#urlencodedformat('http://#cgi.http_host##cgi.script_name#?#cgi.query_string#')#" scrolling="no" frameBorder="no" style="width:400px;height:240px;"></iframe>
 				</cfoutput>

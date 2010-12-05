@@ -167,7 +167,7 @@
 	
 	<cffunction name="isEnabled" access="public" output="false" returntype="boolean" hint="Returns true if this user directory is active. This function can be overridden to check for the existence of config settings.">
 		
-		<cfreturn application.factory.oAltertype.isCFCDeployed(typename="rpxUser") and application.factory.oAltertype.isCFCDeployed(typename="rpxGroup") and isdefined("application.config.rpx.realm") and len(application.config.rpx.realm) and isdefined("application.config.rpx.apikey") and len(application.config.rpx.apikey) />
+		<cfreturn isdefined("application.config.rpx.realm") and len(application.config.rpx.realm) and isdefined("application.config.rpx.apikey") and len(application.config.rpx.apikey) />
 	</cffunction>
 	
 </cfcomponent>
