@@ -66,7 +66,7 @@ VIEW
 		<cfset stPropValues = structnew() />
 		<cfset stPropValues.userdirectory = "RPX" />
 
-		<ft:object stObject="#stObj#" typename="rpxUser" lfields="openid,aGroups" stPropValues="#stPropValues#" legend="Security" />
+		<ft:object stObject="#stObj#" typename="rpxUser" lfields="openid,providerDomain,aGroups" stPropValues="#stPropValues#" legend="Security" />
 	<cfelse>
 		<ft:object stObject="#stUser#" typename="rpxUser" lfields="aGroups" legend="Security" />
 	</cfif>

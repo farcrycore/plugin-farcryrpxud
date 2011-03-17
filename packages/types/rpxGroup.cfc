@@ -20,10 +20,60 @@
 type properties
 ----------------------------------------------->
 	<cfproperty name="title" type="string" default="" hint="The title of this group" ftSeq="1" ftFieldset="" ftLabel="Title" ftType="string" />
+	<cfproperty name="aDomains" type="array" ftSeq="2" ftFieldset="" ftRenderType="custom" ftLabel="Domains" ftHint="A list of domains (one per line) that should automatically be assigned this group. '*' for all users. Strict matching to http://your.domain/* and https://your.domain/*." />
+	
+	<!---------------------------------------------- 
+	object methods
+	----------------------------------------------->
+	
+	<cffunction name="ftEditADomains" access="public" output="true" returntype="string" hint="his will return a string of formatted HTML text to enable the user to edit the data">
+		<cfargument name="typename" required="true" type="string" hint="The name of the type that this field is part of.">
+		<cfargument name="stObject" required="true" type="struct" hint="The object of the record that this field is part of.">
+		<cfargument name="stMetadata" required="true" type="struct" hint="This is the metadata that is either setup as part of the type.cfc or overridden when calling ft:object by using the stMetadata argument.">
+		<cfargument name="fieldname" required="true" type="string" hint="This is the name that will be used for the form field. It includes the prefix that will be used by ft:processform.">
 
-<!---------------------------------------------- 
-object methods
------------------------------------------------>
+		<cfset var html = "" />
+		<cfset var nl = "
+" />
+		
+		<cfsavecontent variable="html">
+			<cfoutput>
+				<div class="multiField">
+					<div id="#arguments.fieldname#DIV">
+						<div class="blockLabel">
+							<textarea name="#arguments.fieldname#" id="#arguments.fieldname#" class="textareaInput #arguments.stMetadata.ftclass#" style="#arguments.stMetadata.ftstyle#">#arraytolist(arguments.stMetadata.value,nl)#</textarea>
+						</div>
+					</div>
+				</div>
+			</cfoutput>
+		</cfsavecontent>
+		
+		<cfreturn html>
+	</cffunction>
+
+	<cffunction name="ftValidateADomains" access="public" output="false" returntype="struct" hint="This will return a struct with bSuccess and stError">
+		<cfargument name="stFieldPost" required="true" type="struct" hint="The fields that are relevent to this field type.It consists of value and stSupporting">
+		<cfargument name="stMetadata" required="true" type="struct" hint="This is the metadata that is either setup as part of the type.cfc or overridden when calling ft:object by using the stMetadata argument.">
+		
+		<cfset var stResult = structNew()>		
+		<cfset stResult.bSuccess = true>
+		<cfset stResult.value = stFieldPost.Value>
+		<cfset stResult.stError = StructNew()>
+		
+		<!--- --------------------------- --->
+		<!--- Perform any validation here --->
+		<!--- --------------------------- --->
+		<cfset stResult.value = listtoarray(arguments.stFieldPost.value,"#chr(10)##chr(13)#") />
+
+		<!--- ----------------- --->
+		<!--- Return the Result --->
+		<!--- ----------------- --->
+		<cfreturn stResult>
+		
+	</cffunction>
+
+	
+	
 	<cffunction name="getID" access="public" output="false" returntype="uuid" hint="Returns the objectid for the specified object (name can be the objectid or the title)">
 		<cfargument name="name" type="string" required="true" hint="Pass in a role name and the objectid will be returned" />
 		

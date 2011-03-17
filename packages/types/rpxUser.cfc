@@ -18,6 +18,7 @@
 <!--- @@Developer: Blair Mackenzie (blair@daemon.com.au) --->
 <cfcomponent displayname="RPX User" hint="User model for the RPX OpenID Directory." extends="farcry.core.packages.types.types" output="false" description="">
 	<cfproperty name="openid" type="string" default="" hint="The userid to use in FarCry" ftLabel="UserID" ftType="string" />
+	<cfproperty name="providerDomain" type="string" default="" hint="The stripped OpenID domain" ftLabel="Provider Domain" ftType="string" />
 	<cfproperty name="aGroups" type="array" default="" hint="The groups this member is a member of" ftLabel="Groups" ftType="array" ftJoin="rpxGroup" />
 	<cfproperty name="lGroups" type="longchar" default="" hint="The groups this member is a member of (list generated automatically)" ftLabel="Groups" ftType="arrayList" ftArrayField="aGroups" ftJoin="farGroup" />
 	

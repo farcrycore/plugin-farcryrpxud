@@ -26,17 +26,13 @@ $Developer: Blair McKenzie (blair@daemon.com.au) $
 <!--- import tag libraries --->
 <cfimport taglib="/farcry/core/tags/admin/" prefix="admin" />
 <cfimport taglib="/farcry/core/tags/formtools" prefix="ft" />
-<cfimport taglib="/farcry/core/tags/extjs" prefix="extjs" />
+<cfimport taglib="/farcry/core/tags/webskin" prefix="skin" />
 
 <!--- set up page header --->
 <admin:header title="User Admin" />
 
 <ft:processForm action="add">
-	<skin:onReady>
-		<cfoutput>
-			$fc.objectAdminAction('Administration', '#application.url.farcry#/conjuror/invocation.cfm?objectid=#application.fc.utils.createJavaUUID()#&typename=rpxUser&method=edit&ref=iframe&module=#url.module#&plugin=#url.plugin#');
-		</cfoutput>
-	</skin:onReady>
+	<skin:onReady><cfoutput>$fc.objectAdminAction('Administration', '#application.url.farcry#/conjuror/invocation.cfm?objectid=#application.fc.utils.createJavaUUID()#&typename=rpxUser&method=edit&ref=iframe&module=#url.module#&plugin=#url.plugin#');</cfoutput></skin:onReady>
 	<cfset structdelete(form,"farcryformsubmitted") />
 </ft:processForm>
 
@@ -48,7 +44,7 @@ $Developer: Blair McKenzie (blair@daemon.com.au) $
 	sortableColumns="firstname,lastname"
 	lFilterFields="firstname,lastname"
 	sqlorderby="lastname asc" 
-	sqlwhere="userdirectory='RPX'"
+	sqlWhere="userdirectory='RPX'"
 	module="customlists/rpxProfile.cfm"
 	plugin="farcryrpxud"
  />

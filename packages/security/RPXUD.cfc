@@ -12,6 +12,7 @@
 		<cfset var qMatch = "" />
 		<cfset var oUser = application.fapi.getContentType(typename="rpxUser") />
 		<cfset var stUser = structnew() />
+		<cfset var cleanedOpenIDPos = "" />
 		
 		<cfimport taglib="/farcry/core/tags/webskin" prefix="skin" />
 		
@@ -35,17 +36,15 @@
 				<cfif qMatch.recordcount>
 				
 					<cfset stResult.authenticated = "true" />
-					<cfset stResult.userid = qMatch..objectid />
+					<cfset stResult.userid = qMatch.objectid />
 					<cfset stResult.ud = "RPX" />
 					
 				<cfelse>
 				
 					<cfset stUser = oUser.getData(objectid=createuuid()) />
 					<cfset stUser.openid = session.openid.rsp.profile.identifier.xmlText />
-					<cfif len(application.config.rpx.defaultgroup)>
-						<cfset arrayappend(stUser.aGroups,application.config.rpx.defaultgroup) />
-						<cfset stUser.lGroups = listappend(stUser.lGroups,application.config.rpx.defaultgroup) />
-					</cfif>
+					<cfset cleanedOpenIDPos = refindnocase("^https?://([^/]*)/",stUser.openid,1,true) />
+					<cfset stUser.providerDomain = mid(stUser.openid,cleanedOpenIDPos.pos[2],cleanedOpenIDPos.len[2]) />
 					<cfset oUser.setData(stProperties=stUser) />
 					
 					<cfset stResult.authenticated = "true" />
@@ -72,26 +71,29 @@
 		
 		<cfset var qGroups = "" />
 		<cfset var aGroups = arraynew(1) />
+		<cfset var stUser = application.fapi.getContentObject(typename="rpxUser",objectid=arguments.userID) />
 		
 		<cfquery datasource="#application.dsn#" name="qGroups">
-			select	g.title
-			from	(
-						#application.dbowner#rpxUser u
-						inner join
-						#application.dbowner#rpxUser_aGroups ug
-						on u.objectid=ug.parentid
+			select	title
+			from	#application.dbowner#rpxGroup
+			where	objectid in (
+						select	data
+						from	#application.dbowner#rpxUser_aGroups
+						where	parentid=<cfqueryparam cfsqltype="cf_sql_varchar" value="#stUser.objectid#" />
 					)
-					inner join
-					#application.dbowner#rpxGroup g
-					on ug.data=g.objectid
-			where	u.objectid=<cfqueryparam cfsqltype="cf_sql_varchar" value="#arguments.userid#" />
+					or objectid in (
+						select	parentid
+						from	#application.dbowner#rpxGroup_aDomains
+						where	data=<cfqueryparam cfsqltype="cf_sql_varchar" value="*" />
+								or data=<cfqueryparam cfsqltype="cf_sql_varchar" value="#stUser.providerDomain#" />
+					)
 		</cfquery>
 		
 		<cfloop query="qGroups">
 			<cfset arrayappend(aGroups,title) />
 		</cfloop>
 		
-		<cfreturn aGroups />
+		<cfreturn listtoarray(valuelist(qGroups.title)) />
 	</cffunction>
 	
 	<cffunction name="getAllGroups" access="public" output="false" returntype="array" hint="Returns all the groups that this user directory supports">
@@ -118,16 +120,21 @@
 		
 		<cfquery datasource="#application.dsn#" name="qUsers">
 			select	objectid
-			from	(
-						#application.dbowner#rpxUser u
-						inner join
-						#application.dbowner#rpxUser_aGroups ug
-						on u.objectid=ug.parentid
+			from	#application.dbowner#rpxUser
+			where	objectid in (
+						select	parentid
+						from	#application.dbowner#rpxUser_aGroups ug
+								inner join
+								#application.dbowner#rpxGroup g
+								ug.data=g.objectid
+						where	g.title=<cfqueryparam cfsqltype="cf_sql_varchar" value="#arguments.group#" />
+								or objectid in (
+									select	parentid
+									from	#application.dbowner#rpxGroup_aDomains
+									where	data=<cfqueryparam cfsqltype="cf_sql_varchar" value="*" />
+											or data=rpxUser.providerDomain
+								)
 					)
-					inner join
-					#application.dbowner#rpxGroup g
-					on ug.data=g.objectid
-			where	g.title=<cfqueryparam cfsqltype="cf_sql_varchar" value="#arguments.group#" />
 		</cfquery>
 		
 		<cfreturn listtoarray(valuelist(qUsers.objectid)) />
@@ -140,25 +147,9 @@
 		<cfset var stProfile = structnew() />
 		
 		<cfif isdefined("session.openid")>
-						
-			<cfif XmlSearch(session.openid,"count(rsp/profile/name/givenName)")>
-				<cfset stProfile.firstname = session.openid.rsp.profile.name.givenName.xmlText />
-				<cfset stProfile.lastname = session.openid.rsp.profile.name.familyName.xmlText />
-			<cfelseif XmlSearch(session.openid,"count(rsp/profile/name/formatted)")>
-				<cfset formattedName = session.openid.rsp.profile.name.formatted.xmlText>
-				<cfset blankPos = find(" ",formattedName)>
-				<cfset stProfile.firstname = Left(formattedName,blankPos)>
-				<cfset stProfile.lastname = Right(formattedName,len(formattedName)-blankPos)>
-			<cfelseif XmlSearch(session.openid,"count(rsp/profile/displayName)")>
-				<cfset stProfile.firstname = session.openid.rsp.profile.displayName.xmlText />
-			</cfif>
-			<cfset stProfile.label = stProfile.firstname & " " & stProfile.lastname>
-			
-			<cfif XmlSearch(session.openid,"count(rsp/profile/verifiedEmail)")>
-				<cfset stProfile.emailaddress = session.openid.rsp.profile.verifiedEmail.xmlText />
-			<cfelseif XmlSearch(session.openid,"count(rsp/profile/email)")>
-				<cfset stProfile.emailaddress = session.openid.rsp.profile.email.xmlText />				
-			</cfif>
+			<cfset stProfile.firstname = session.openid.rsp.profile.name.givenName.xmlText />
+			<cfset stProfile.lastname = session.openid.rsp.profile.name.familyName.xmlText />
+			<cfset stProfile.emailaddress = session.openid.rsp.profile.verifiedEmail.xmlText />
 			<cfset stProfile.override = true />
 		</cfif>
 		
@@ -167,7 +158,11 @@
 	
 	<cffunction name="isEnabled" access="public" output="false" returntype="boolean" hint="Returns true if this user directory is active. This function can be overridden to check for the existence of config settings.">
 		
-		<cfreturn isdefined("application.config.rpx.realm") and len(application.config.rpx.realm) and isdefined("application.config.rpx.apikey") and len(application.config.rpx.apikey) />
+		<cfif structkeyexists(application.fc.lib,"db")>
+			<cfreturn application.fc.lib.db.isDeployed(typename="rpxUser") and application.fc.lib.db.isDeployed(typename="rpxGroup") and isdefined("application.config.rpx.realm") and len(application.config.rpx.realm) and isdefined("application.config.rpx.apikey") and len(application.config.rpx.apikey) />
+		<cfelse>
+			<cfreturn application.factory.oAltertype.isCFCDeployed(typename="rpxUser") and application.factory.oAltertype.isCFCDeployed(typename="rpxGroup") and isdefined("application.config.rpx.realm") and len(application.config.rpx.realm) and isdefined("application.config.rpx.apikey") and len(application.config.rpx.apikey) />
+		</cfif>
 	</cffunction>
 	
 </cfcomponent>

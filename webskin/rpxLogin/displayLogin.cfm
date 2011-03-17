@@ -27,7 +27,6 @@ FARCRY IMPORT FILES
 <cfimport taglib="/farcry/core/tags/formtools/" prefix="ft" />
 <cfimport taglib="/farcry/core/tags/security/" prefix="sec" />
 <cfimport taglib="/farcry/core/tags/webskin/" prefix="skin" />
-<cfimport taglib="/farcry/core/tags/extjs/" prefix="extjs" />
 
 
 
@@ -50,7 +49,7 @@ START WEBSKIN
 			
 			</ft:form>
 			
-			<cfif isdefined("application.config.rpx.realm")>
+			<cfif application.security.userdirectories.rpx.isEnabled()>
 				<cfoutput>
 					<iframe src="https://#application.config.rpx.realm#.rpxnow.com/openid/embed?token_url=#urlencodedformat('http://#cgi.http_host##cgi.script_name#?#cgi.query_string#')#" scrolling="no" frameBorder="no" style="width:400px;height:240px;"></iframe>
 				</cfoutput>
