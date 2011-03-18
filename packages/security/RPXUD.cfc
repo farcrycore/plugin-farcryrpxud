@@ -43,8 +43,13 @@
 				
 					<cfset stUser = oUser.getData(objectid=createuuid()) />
 					<cfset stUser.openid = session.openid.rsp.profile.identifier.xmlText />
-					<cfset cleanedOpenIDPos = refindnocase("^https?://([^/]*)/",stUser.openid,1,true) />
-					<cfset stUser.providerDomain = mid(stUser.openid,cleanedOpenIDPos.pos[2],cleanedOpenIDPos.len[2]) />
+					<cfif session.openid.rsp.profile.providerName.xmlText eq "GoogleApps">
+						<cfset cleanedOpenIDPos = refindnocase("^[^@]*@(.*)$",session.openid.rsp.profile.verifiedEmail.xmlText,1,true) />
+						<cfset stUser.providerDomain = mid(session.openid.rsp.profile.verifiedEmail.xmlText,cleanedOpenIDPos.pos[2],cleanedOpenIDPos.len[2]) />
+					<cfelse>
+						<cfset cleanedOpenIDPos = refindnocase("^https?://([^/]*)/",stUser.openid,1,true) />
+						<cfset stUser.providerDomain = mid(stUser.openid,cleanedOpenIDPos.pos[2],cleanedOpenIDPos.len[2]) />
+					</cfif>
 					<cfset oUser.setData(stProperties=stUser) />
 					
 					<cfset stResult.authenticated = "true" />
@@ -67,11 +72,19 @@
 	</cffunction>
 	
 	<cffunction name="getUserGroups" access="public" output="false" returntype="array" hint="Returns the groups that the specified user is a member of">
-		<cfargument name="UserID" type="string" required="true" hint="The user being queried" />
+		<cfargument name="userID" type="string" required="false" default="" hint="The user being queried" />
+		<cfargument name="openID" type="string" required="false" default="" hint="The user being queried" />
 		
 		<cfset var qGroups = "" />
 		<cfset var aGroups = arraynew(1) />
 		<cfset var stUser = application.fapi.getContentObject(typename="rpxUser",objectid=arguments.userID) />
+		<cfset var providerDomain = "" />
+		<cfset var cleanedOpenIDPos = "" />
+		
+		<cfif len(arguments.openID)>
+			<cfset cleanedOpenIDPos = refindnocase("^https?://([^/]*)/",stUser.openid,1,true) />
+			<cfset providerDomain = mid(arguments.openid,cleanedOpenIDPos.pos[2],cleanedOpenIDPos.len[2]) />
+		</cfif>
 		
 		<cfquery datasource="#application.dsn#" name="qGroups">
 			select	title
@@ -86,6 +99,7 @@
 						from	#application.dbowner#rpxGroup_aDomains
 						where	data=<cfqueryparam cfsqltype="cf_sql_varchar" value="*" />
 								or data=<cfqueryparam cfsqltype="cf_sql_varchar" value="#stUser.providerDomain#" />
+								or data=<cfqueryparam cfsqltype="cf_sql_varchar" value="#providerDomain#" />
 					)
 		</cfquery>
 		
