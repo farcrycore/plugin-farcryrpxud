@@ -140,7 +140,7 @@
 						from	#application.dbowner#rpxUser_aGroups ug
 								inner join
 								#application.dbowner#rpxGroup g
-								ug.data=g.objectid
+								on ug.data=g.objectid
 						where	g.title=<cfqueryparam cfsqltype="cf_sql_varchar" value="#arguments.group#" />
 								or objectid in (
 									select	parentid
